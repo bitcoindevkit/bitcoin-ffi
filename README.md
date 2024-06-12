@@ -2,14 +2,12 @@
 
 This crate does the light wrapping on [rust-bitcoin](https://github.com/rust-bitcoin/rust-bitcoin/) required for use in [uniffi](https://github.com/mozilla/uniffi-rs)-based libraries.
 
-<br>
-
 ## Usage
 
 To leverage these types in your uniffi library, simply:
 1. Add a dependency on this crate:
 ```toml
-rust-bitcoin-ffi = { git = "https://github.com/thunderbiscuit/rust-bitcoin-ffi.git", branch = "master" }
+bitcoin-ffi = { git = "https://github.com/thunderbiscuit/bitcoin-ffi.git", branch = "master" }
 ```
 
 2. Add the following declarations to your UDL file:
