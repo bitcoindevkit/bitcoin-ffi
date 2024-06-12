@@ -143,6 +143,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitcoin-ffi"
+version = "0.1.0"
+dependencies = [
+ "bitcoin",
+ "uniffi",
+]
+
+[[package]]
 name = "bitcoin-internals"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -394,14 +402,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "rust-bitcoin-ffi"
-version = "0.1.0"
-dependencies = [
- "bitcoin",
- "uniffi",
 ]
 
 [[package]]
