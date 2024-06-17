@@ -1,5 +1,5 @@
 [bindings.kotlin]
-package_name = "org.bitcoindevkit.bitcoin"
+package_name = "org.rustbitcoin.bitcoin"
 
 [bindings.swift]
 module_name = "Bitcoin"
