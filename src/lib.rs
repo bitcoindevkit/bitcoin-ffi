@@ -1,4 +1,4 @@
-use bitcoin::blockdata::script::ScriptBuf as RustBitcoinScriptBuf;
+use bitcoin::ScriptBuf as RustBitcoinScriptBuf;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Script(pub RustBitcoinScriptBuf);
