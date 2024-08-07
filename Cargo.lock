@@ -166,6 +166,7 @@ name = "bitcoin-ffi"
 version = "0.1.1"
 dependencies = [
  "bitcoin",
+ "thiserror",
  "uniffi",
 ]
 

@@ -13,6 +13,7 @@ default = ["uniffi/cli"]
 [dependencies]
 bitcoin = { version = "0.32.2" }
 uniffi = { version = "=0.28.0" }
+thiserror = "1.0.58"
 
 [build-dependencies]
 uniffi = { version = "=0.28.0", features = ["build"] }
