@@ -1,4 +1,4 @@
-pub use bitcoin::amount::ParseAmountError as BitcoinParseAmountError;
+use bitcoin::amount::ParseAmountError as BitcoinParseAmountError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum FeeRateError {

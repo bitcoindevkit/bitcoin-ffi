@@ -36,6 +36,14 @@ interface FeeRate {
   u64 to_sat_per_kwu();
 };
 
+[Custom]
+typedef string Txid;
+
+dictionary OutPoint {
+  Txid txid;
+  u32 vout;
+};
+
 [NonExhaustive]
 enum Network {
   "Bitcoin",
