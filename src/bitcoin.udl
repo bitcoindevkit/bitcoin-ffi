@@ -4,6 +4,11 @@ namespace bitcoin {};
 // Core types
 // ------------------------------------------------------------------------
 
+dictionary OutPoint {
+  string txid;
+  u32 vout;
+};
+
 interface Script {
   constructor(sequence<u8> raw_output_script);
  

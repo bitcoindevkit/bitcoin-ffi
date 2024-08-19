@@ -1,5 +1,7 @@
-use bitcoin::Amount as BitcoinAmount;
+use bitcoin::OutPoint as BitcoinOutpoint;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::{Amount as BitcoinAmount, Txid};
+use std::str::FromStr;
 
 use error::ParseAmountError;
 
@@ -7,6 +9,33 @@ use error::ParseAmountError;
 mod macros;
 pub mod error;
 pub use bitcoin::Network;
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct OutPoint {
+    pub txid: String,
+    pub vout: u32,
+}
+
+impl From<&OutPoint> for BitcoinOutpoint {
+    fn from(outpoint: &OutPoint) -> Self {
+        BitcoinOutpoint {
+            txid: Txid::from_str(&outpoint.txid).unwrap(),
+            vout: outpoint.vout,
+        }
+    }
+}
+
+impl From<&BitcoinOutpoint> for OutPoint {
+    fn from(outpoint: &BitcoinOutpoint) -> Self {
+        OutPoint {
+            txid: outpoint.txid.to_string(),
+            vout: outpoint.vout,
+        }
+    }
+}
+
+impl_from_core_type_named!(OutPoint, BitcoinOutpoint);
+impl_from_ffi_type_named!(OutPoint, BitcoinOutpoint);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Script(pub BitcoinScriptBuf);
