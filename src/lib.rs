@@ -1,12 +1,46 @@
 use bitcoin::Amount as BitcoinAmount;
+use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
 
+use error::FeeRateError;
 use error::ParseAmountError;
 
 #[macro_use]
 mod macros;
 pub mod error;
 pub use bitcoin::Network;
+
+#[derive(Clone, Debug)]
+pub struct FeeRate(pub BitcoinFeeRate);
+
+impl FeeRate {
+    pub fn from_sat_per_vb(sat_per_vb: u64) -> Result<Self, FeeRateError> {
+        let fee_rate: Option<BitcoinFeeRate> = BitcoinFeeRate::from_sat_per_vb(sat_per_vb);
+        match fee_rate {
+            Some(fee_rate) => Ok(FeeRate(fee_rate)),
+            None => Err(FeeRateError::ArithmeticOverflow),
+        }
+    }
+
+    pub fn from_sat_per_kwu(sat_per_kwu: u64) -> Self {
+        FeeRate(BitcoinFeeRate::from_sat_per_kwu(sat_per_kwu))
+    }
+
+    pub fn to_sat_per_vb_ceil(&self) -> u64 {
+        self.0.to_sat_per_vb_ceil()
+    }
+
+    pub fn to_sat_per_vb_floor(&self) -> u64 {
+        self.0.to_sat_per_vb_floor()
+    }
+
+    pub fn to_sat_per_kwu(&self) -> u64 {
+        self.0.to_sat_per_kwu()
+    }
+}
+
+impl_from_core_type!(FeeRate, BitcoinFeeRate);
+impl_from_ffi_type!(FeeRate, BitcoinFeeRate);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Script(pub BitcoinScriptBuf);

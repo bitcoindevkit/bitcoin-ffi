@@ -22,6 +22,20 @@ interface Amount {
   f64 to_btc();
 };
 
+interface FeeRate {
+  [Name=from_sat_per_vb, Throws=FeeRateError]
+  constructor(u64 sat_per_vb);
+
+  [Name=from_sat_per_kwu]
+  constructor(u64 sat_per_kwu);
+
+  u64 to_sat_per_vb_ceil();
+
+  u64 to_sat_per_vb_floor();
+
+  u64 to_sat_per_kwu();
+};
+
 [NonExhaustive]
 enum Network {
   "Bitcoin",
@@ -42,4 +56,9 @@ interface ParseAmountError {
   InputTooLarge();
   InvalidCharacter(string error_message);
   OtherParseAmountErr();
+};
+
+[Error]
+interface FeeRateError {
+  ArithmeticOverflow();
 };
