@@ -52,9 +52,46 @@ enum Network {
   "Regtest",
 };
 
+[Traits=(Display)]
+interface Address {
+  [Throws=AddressParseError]
+  constructor(string address, Network network);
+
+  [Name=from_script, Throws=FromScriptError]
+  constructor(Script script, Network network);
+
+  Script script_pubkey();
+
+  string to_qr_uri();
+
+  boolean is_valid_for_network(Network network);
+};
+
 // ------------------------------------------------------------------------
 // Errors
 // ------------------------------------------------------------------------
+
+[Error]
+enum AddressParseError {
+    "Base58",
+    "Bech32",
+    "WitnessVersion",
+    "WitnessProgram",
+    "UnknownHrp",
+    "LegacyAddressTooLong",
+    "InvalidBase58PayloadLength",
+    "InvalidLegacyPrefix",
+    "NetworkValidation",
+    "OtherAddressParseErr",
+};
+
+[Error]
+interface FromScriptError {
+  UnrecognizedScript();
+  WitnessProgram(string error_message);
+  WitnessVersion(string error_message);
+  OtherFromScriptErr();
+};
 
 [Error]
 interface ParseAmountError {

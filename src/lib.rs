@@ -1,16 +1,67 @@
+use bitcoin::address::{NetworkChecked, NetworkUnchecked};
+use bitcoin::Address as BitcoinAddress;
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
-use bitcoin::ScriptBuf as BitcoinScriptBuf;
 pub use bitcoin::OutPoint;
+use bitcoin::ScriptBuf as BitcoinScriptBuf;
 pub use bitcoin::Txid;
 
+use error::AddressParseError;
 use error::FeeRateError;
+use error::FromScriptError;
 use error::ParseAmountError;
+
+use std::fmt::Display;
+use std::str::FromStr;
+use std::sync::Arc;
 
 #[macro_use]
 mod macros;
 pub mod error;
 pub use bitcoin::Network;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Address(BitcoinAddress<NetworkChecked>);
+
+impl Address {
+    pub fn new(address: String, network: Network) -> Result<Self, AddressParseError> {
+        let parsed_address = BitcoinAddress::from_str(&address).map_err(AddressParseError::from)?;
+        let network_checked_address = parsed_address.require_network(network)?;
+        Ok(Address(network_checked_address))
+    }
+
+    pub fn from_script(script: Arc<Script>, network: Network) -> Result<Self, FromScriptError> {
+        let address = BitcoinAddress::from_script(&script.0.clone(), network)?;
+        Ok(Address(address))
+    }
+
+    pub fn script_pubkey(&self) -> Arc<Script> {
+        Arc::new(Script(self.0.script_pubkey()))
+    }
+
+    pub fn to_qr_uri(&self) -> String {
+        self.0.to_qr_uri()
+    }
+
+    pub fn is_valid_for_network(&self, network: Network) -> bool {
+        let address_str = self.0.to_string();
+        if let Ok(unchecked_address) = address_str.parse::<BitcoinAddress<NetworkUnchecked>>() {
+            unchecked_address.is_valid_for_network(network)
+        } else {
+            false
+        }
+    }
+}
+
+impl Display for Address {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+type CheckedBitcoinAddress = BitcoinAddress<NetworkChecked>;
+impl_from_core_type!(Address, CheckedBitcoinAddress);
+impl_from_ffi_type!(Address, CheckedBitcoinAddress);
 
 #[derive(Clone, Debug)]
 pub struct FeeRate(pub BitcoinFeeRate);
