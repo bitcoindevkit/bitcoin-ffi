@@ -3,7 +3,9 @@ use bitcoin::Address as BitcoinAddress;
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::TxIn as BitcoinTxIn;
 use bitcoin::TxOut as BitcoinTxOut;
+use bitcoin::Sequence;
 
 pub use bitcoin::BlockHash;
 pub use bitcoin::OutPoint;
@@ -173,6 +175,36 @@ impl Amount {
 
 impl_from_core_type!(Amount, BitcoinAmount);
 impl_from_ffi_type!(Amount, BitcoinAmount);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TxIn {
+    pub previous_output: OutPoint,
+    pub script_sig: Arc<Script>,
+    pub sequence: u32,
+    pub witness: Vec<Vec<u8>>,
+}
+
+impl From<BitcoinTxIn> for TxIn {
+    fn from(value: BitcoinTxIn) -> Self {
+        Self {
+            previous_output: value.previous_output,
+            script_sig: Arc::new(value.script_sig.into()),
+            sequence: value.sequence.0,
+            witness: value.witness.to_vec(),
+        }
+    }
+}
+
+impl From<TxIn> for BitcoinTxIn {
+    fn from(value: TxIn) -> Self {
+        Self {
+            previous_output: value.previous_output,
+            script_sig: value.script_sig.0.clone(),
+            sequence: Sequence(value.sequence),
+            witness: value.witness.into(),
+        }
+    }
+}
 
 impl_string_custom_typedef!(BlockHash);
 impl_string_custom_typedef!(Txid);
