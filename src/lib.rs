@@ -2,11 +2,12 @@ use bitcoin::address::{NetworkChecked, NetworkUnchecked};
 use bitcoin::Address as BitcoinAddress;
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
-pub use bitcoin::OutPoint;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
 use bitcoin::TxOut as BitcoinTxOut;
+
+pub use bitcoin::BlockHash;
+pub use bitcoin::OutPoint;
 pub use bitcoin::Txid;
-use std::sync::Arc;
 
 use error::AddressParseError;
 use error::FeeRateError;
@@ -15,6 +16,7 @@ use error::ParseAmountError;
 
 use std::fmt::Display;
 use std::str::FromStr;
+use std::sync::Arc;
 
 #[macro_use]
 mod macros;
@@ -172,15 +174,7 @@ impl Amount {
 impl_from_core_type!(Amount, BitcoinAmount);
 impl_from_ffi_type!(Amount, BitcoinAmount);
 
-impl UniffiCustomTypeConverter for Txid {
-    type Builtin = String;
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(val.parse::<Txid>()?)
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.to_string()
-    }
-}
+impl_string_custom_typedef!(BlockHash);
+impl_string_custom_typedef!(Txid);
 
 uniffi::include_scaffolding!("bitcoin");
