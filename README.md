@@ -7,7 +7,7 @@ This crate does the light wrapping on [rust-bitcoin](https://github.com/rust-bit
 To leverage these types in your uniffi library, simply:
 1. Add a dependency on this crate:
 ```toml
-bitcoin-ffi = { git = "https://github.com/bitcoindevkit/bitcoin-ffi.git", tag = "v0.1.1" }
+bitcoin-ffi = { git = "https://github.com/bitcoindevkit/bitcoin-ffi.git", tag = "v0.1.2" }
 ```
 
 2. Add the following declarations to your UDL file for the types you wish to import. To read more about external type definitions, see [this page on the Uniffi documentation](https://mozilla.github.io/uniffi-rs/latest/udl/ext_types_external.html).
