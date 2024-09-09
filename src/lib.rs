@@ -115,4 +115,36 @@ pub struct OutPoint {
     pub vout: u32,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Enum)]
+#[non_exhaustive]
+pub enum NetworkType {
+    Mainnet,
+    Testnet,
+    Signet,
+    Regtest,
+}
+
+impl From<Network> for NetworkType {
+    fn from(network: Network) -> Self {
+        match network {
+            Network::Bitcoin => NetworkType::Mainnet,
+            Network::Testnet => NetworkType::Testnet,
+            Network::Signet => NetworkType::Signet,
+            Network::Regtest => NetworkType::Regtest,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<NetworkType> for Network {
+    fn from(network_type: NetworkType) -> Self {
+        match network_type {
+            NetworkType::Mainnet => Network::Bitcoin,
+            NetworkType::Testnet => Network::Testnet,
+            NetworkType::Signet => Network::Signet,
+            NetworkType::Regtest => Network::Regtest,
+        }
+    }
+}
+
 uniffi::include_scaffolding!("bitcoin");
