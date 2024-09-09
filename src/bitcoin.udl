@@ -10,14 +10,6 @@ interface Script {
   sequence<u8> to_bytes();
 };
 
-[Custom]
-typedef string Txid;
-
-dictionary OutPoint {
-  Txid txid;
-  u32 vout;
-};
-
 [NonExhaustive]
 enum Network {
   "Bitcoin",

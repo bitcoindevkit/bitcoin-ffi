@@ -1,8 +1,8 @@
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
-pub use bitcoin::OutPoint;
-pub use bitcoin::Txid;
+pub use bitcoin::OutPoint as BitcoinOutPoint;
+pub use bitcoin::Txid as BitcoinTxid;
 
 use error::FeeRateError;
 use error::ParseAmountError;
@@ -92,15 +92,27 @@ impl Amount {
 impl_from_core_type!(Amount, BitcoinAmount);
 impl_from_ffi_type!(Amount, BitcoinAmount);
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Txid(pub bitcoin::Txid);
+
+uniffi::custom_type!(Txid, String);
+
 impl UniffiCustomTypeConverter for Txid {
     type Builtin = String;
+
     fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(val.parse::<Txid>()?)
+        Ok(Txid(val.parse::<bitcoin::Txid>().unwrap()))
     }
 
     fn from_custom(obj: Self) -> Self::Builtin {
-        obj.to_string()
+        obj.0.to_string()
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct OutPoint {
+    pub txid: Txid,
+    pub vout: u32,
 }
 
 uniffi::include_scaffolding!("bitcoin");
