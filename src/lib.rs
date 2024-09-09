@@ -12,10 +12,12 @@ mod macros;
 pub mod error;
 pub use bitcoin::Network;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, uniffi::Object)]
 pub struct FeeRate(pub BitcoinFeeRate);
 
+#[uniffi::export]
 impl FeeRate {
+    #[uniffi::constructor(name = "from_sat_per_vb")]
     pub fn from_sat_per_vb(sat_per_vb: u64) -> Result<Self, FeeRateError> {
         let fee_rate: Option<BitcoinFeeRate> = BitcoinFeeRate::from_sat_per_vb(sat_per_vb);
         match fee_rate {
@@ -24,6 +26,7 @@ impl FeeRate {
         }
     }
 
+    #[uniffi::constructor(name = "from_sat_per_kwu")]
     pub fn from_sat_per_kwu(sat_per_kwu: u64) -> Self {
         FeeRate(BitcoinFeeRate::from_sat_per_kwu(sat_per_kwu))
     }

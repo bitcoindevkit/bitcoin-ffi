@@ -1,6 +1,6 @@
 use bitcoin::amount::ParseAmountError as BitcoinParseAmountError;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum FeeRateError {
     #[error("arithmetic overflow on feerate")]
     ArithmeticOverflow,
