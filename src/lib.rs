@@ -61,13 +61,17 @@ impl Script {
 impl_from_core_type!(Script, BitcoinScriptBuf);
 impl_from_ffi_type!(Script, BitcoinScriptBuf);
 
+#[derive(uniffi::Object)]
 pub struct Amount(pub BitcoinAmount);
 
-impl Amount {
+#[uniffi::export]
+impl Amount {    
+    #[uniffi::constructor(name = "from_sat")]
     pub fn from_sat(sat: u64) -> Self {
         Amount(BitcoinAmount::from_sat(sat))
     }
 
+    #[uniffi::constructor]
     pub fn from_btc(btc: f64) -> Result<Self, ParseAmountError> {
         let bitcoin_amount = BitcoinAmount::from_btc(btc).map_err(ParseAmountError::from)?;
         Ok(Amount(bitcoin_amount))

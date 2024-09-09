@@ -6,7 +6,7 @@ pub enum FeeRateError {
     ArithmeticOverflow,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum ParseAmountError {
     #[error("amount out of range")]
     OutOfRange,

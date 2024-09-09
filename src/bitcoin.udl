@@ -10,18 +10,6 @@ interface Script {
   sequence<u8> to_bytes();
 };
 
-interface Amount {
-  [Name=from_sat]
-  constructor(u64 from_sat);
-
-  [Name=from_btc, Throws=ParseAmountError]
-  constructor(f64 from_btc);
-
-  u64 to_sat();
-
-  f64 to_btc();
-};
-
 interface FeeRate {
   [Name=from_sat_per_vb, Throws=FeeRateError]
   constructor(u64 sat_per_vb);
@@ -55,16 +43,6 @@ enum Network {
 // ------------------------------------------------------------------------
 // Errors
 // ------------------------------------------------------------------------
-
-[Error]
-interface ParseAmountError {
-  OutOfRange();
-  TooPrecise();
-  MissingDigits();
-  InputTooLarge();
-  InvalidCharacter(string error_message);
-  OtherParseAmountErr();
-};
 
 [Error]
 interface FeeRateError {
