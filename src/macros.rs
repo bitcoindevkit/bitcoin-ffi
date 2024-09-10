@@ -17,3 +17,4 @@ macro_rules! impl_from_ffi_type {
         }
     };
 }
+

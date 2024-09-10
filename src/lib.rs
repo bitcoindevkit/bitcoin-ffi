@@ -1,8 +1,8 @@
+uniffi::setup_scaffolding!();
+
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
-pub use bitcoin::OutPoint as BitcoinOutPoint;
-pub use bitcoin::Txid as BitcoinTxid;
 
 use error::FeeRateError;
 use error::ParseAmountError;
@@ -47,10 +47,12 @@ impl FeeRate {
 impl_from_core_type!(FeeRate, BitcoinFeeRate);
 impl_from_ffi_type!(FeeRate, BitcoinFeeRate);
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
 pub struct Script(pub BitcoinScriptBuf);
 
+#[uniffi::export]
 impl Script {
+    #[uniffi::constructor]
     pub fn new(raw_output_script: Vec<u8>) -> Self {
         let script: BitcoinScriptBuf = raw_output_script.into();
         Script(script)
@@ -68,7 +70,7 @@ impl_from_ffi_type!(Script, BitcoinScriptBuf);
 pub struct Amount(pub BitcoinAmount);
 
 #[uniffi::export]
-impl Amount {    
+impl Amount {
     #[uniffi::constructor(name = "from_sat")]
     pub fn from_sat(sat: u64) -> Self {
         Amount(BitcoinAmount::from_sat(sat))
@@ -146,5 +148,3 @@ impl From<NetworkType> for Network {
         }
     }
 }
-
-uniffi::include_scaffolding!("bitcoin");
