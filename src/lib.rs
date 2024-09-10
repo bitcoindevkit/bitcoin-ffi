@@ -3,6 +3,10 @@ uniffi::setup_scaffolding!();
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::TxIn as BitcoinTxIn;
+use bitcoin::Weight as BitcoinWeight;
+use bitcoin::Sequence as BitcoinSequence;
+use bitcoin::Witness as BitcoinWitness;
 
 use error::FeeRateError;
 use error::ParseAmountError;
@@ -117,6 +121,24 @@ pub struct OutPoint {
     pub vout: u32,
 }
 
+impl From<bitcoin::OutPoint> for OutPoint {
+    fn from(outpoint: bitcoin::OutPoint) -> Self {
+        OutPoint {
+            txid: Txid(outpoint.txid),
+            vout: outpoint.vout,
+        }
+    }
+}
+
+impl From<OutPoint> for bitcoin::OutPoint {
+    fn from(outpoint: OutPoint) -> Self {
+        bitcoin::OutPoint {
+            txid: outpoint.txid.0,
+            vout: outpoint.vout,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, uniffi::Enum)]
 #[non_exhaustive]
 pub enum NetworkType {
@@ -148,3 +170,67 @@ impl From<NetworkType> for Network {
         }
     }
 }
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
+pub struct Weight(pub BitcoinWeight);
+
+impl_from_core_type!(Weight, BitcoinWeight);
+impl_from_ffi_type!(Weight, BitcoinWeight);
+
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
+pub struct Sequence(pub BitcoinSequence);
+
+impl_from_core_type!(Sequence, BitcoinSequence);
+impl_from_ffi_type!(Sequence, BitcoinSequence);
+
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
+pub struct Witness(pub BitcoinWitness);
+
+impl_from_core_type!(Witness, BitcoinWitness);
+impl_from_ffi_type!(Witness, BitcoinWitness);
+
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
+pub struct TxIn(pub BitcoinTxIn); 
+
+#[uniffi::export]
+impl TxIn {
+    #[uniffi::constructor]
+    pub fn new(previous_output: OutPoint, sequence: u32, script_sig: Vec<u8>, witness: Vec<Vec<u8>>) -> Self {
+        TxIn(BitcoinTxIn {
+            previous_output: previous_output.into(),
+            sequence: bitcoin::Sequence(sequence),
+            script_sig: Script::new(script_sig).into(),
+            witness: BitcoinWitness::from_slice(&witness),
+        })
+    }
+
+    pub fn previous_output(&self) -> OutPoint {
+        self.0.previous_output.into()
+    }
+
+    pub fn sequence(&self) -> Sequence {
+        self.0.sequence.into()
+    }
+
+    pub fn script_sig(&self) -> Script {
+        self.0.script_sig.clone().into()
+    }
+
+    pub fn witness(&self) -> Vec<Vec<u8>> {
+        self.0.witness.iter().map(|w| w.to_vec()).collect()
+    }
+
+    pub fn weight(&self) -> Weight {
+        self.0.segwit_weight().into()
+    }
+
+    pub fn total_size(&self) -> u32 {
+        self.0.total_size() as u32
+    }
+}
+
+impl_from_core_type!(TxIn, BitcoinTxIn);
+impl_from_ffi_type!(TxIn, BitcoinTxIn);
