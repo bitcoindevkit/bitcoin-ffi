@@ -7,6 +7,9 @@ use bitcoin::TxIn as BitcoinTxIn;
 use bitcoin::Weight as BitcoinWeight;
 use bitcoin::Sequence as BitcoinSequence;
 use bitcoin::Witness as BitcoinWitness;
+use bitcoin::Transaction as BitcoinTransaction;
+use bitcoin::transaction::Version as BitcoinTxVersion;
+use bitcoin::locktime::absolute::LockTime as BitcoinLockTime;
 
 use error::FeeRateError;
 use error::ParseAmountError;
@@ -51,26 +54,26 @@ impl FeeRate {
 impl_from_core_type!(FeeRate, BitcoinFeeRate);
 impl_from_ffi_type!(FeeRate, BitcoinFeeRate);
 
-#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
-pub struct Script(pub BitcoinScriptBuf);
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct Script {
+    buffer: Vec<u8>,
+}
 
-#[uniffi::export]
-impl Script {
-    #[uniffi::constructor]
-    pub fn new(raw_output_script: Vec<u8>) -> Self {
-        let script: BitcoinScriptBuf = raw_output_script.into();
-        Script(script)
-    }
-
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.0.to_bytes()
+impl From<BitcoinScriptBuf> for Script {
+    fn from(script: BitcoinScriptBuf) -> Self {
+        Script {
+            buffer: script.to_bytes(),
+        }
     }
 }
 
-impl_from_core_type!(Script, BitcoinScriptBuf);
-impl_from_ffi_type!(Script, BitcoinScriptBuf);
+impl From<Script> for BitcoinScriptBuf {
+    fn from(script: Script) -> Self {
+        BitcoinScriptBuf::from(script.buffer)
+    }
+}
 
-#[derive(uniffi::Object)]
+#[derive(Debug, PartialEq, Eq, uniffi::Object)]
 pub struct Amount(pub BitcoinAmount);
 
 #[uniffi::export]
@@ -177,9 +180,21 @@ pub struct Weight(pub BitcoinWeight);
 impl_from_core_type!(Weight, BitcoinWeight);
 impl_from_ffi_type!(Weight, BitcoinWeight);
 
-
-#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Sequence(pub BitcoinSequence);
+uniffi::custom_type!(Sequence, u32);
+
+impl UniffiCustomTypeConverter for Sequence {
+    type Builtin = u32;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(Sequence(BitcoinSequence::from_consensus(val)))
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.0.to_consensus_u32()
+    }
+}
 
 impl_from_core_type!(Sequence, BitcoinSequence);
 impl_from_ffi_type!(Sequence, BitcoinSequence);
@@ -192,45 +207,180 @@ impl_from_core_type!(Witness, BitcoinWitness);
 impl_from_ffi_type!(Witness, BitcoinWitness);
 
 
-#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
-pub struct TxIn(pub BitcoinTxIn); 
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct TxIn {
+    pub previous_output: OutPoint,
+    pub sequence: Sequence,
+    pub script_sig: Script,
+    pub witness: Vec<Vec<u8>>,
+}
 
-#[uniffi::export]
-impl TxIn {
-    #[uniffi::constructor]
-    pub fn new(previous_output: OutPoint, sequence: u32, script_sig: Vec<u8>, witness: Vec<Vec<u8>>) -> Self {
-        TxIn(BitcoinTxIn {
-            previous_output: previous_output.into(),
-            sequence: bitcoin::Sequence(sequence),
-            script_sig: Script::new(script_sig).into(),
-            witness: BitcoinWitness::from_slice(&witness),
-        })
-    }
-
-    pub fn previous_output(&self) -> OutPoint {
-        self.0.previous_output.into()
-    }
-
-    pub fn sequence(&self) -> Sequence {
-        self.0.sequence.into()
-    }
-
-    pub fn script_sig(&self) -> Script {
-        self.0.script_sig.clone().into()
-    }
-
-    pub fn witness(&self) -> Vec<Vec<u8>> {
-        self.0.witness.iter().map(|w| w.to_vec()).collect()
-    }
-
-    pub fn weight(&self) -> Weight {
-        self.0.segwit_weight().into()
-    }
-
-    pub fn total_size(&self) -> u32 {
-        self.0.total_size() as u32
+impl From<BitcoinTxIn> for TxIn {
+    fn from(txin: BitcoinTxIn) -> Self {
+        TxIn {
+            previous_output: txin.previous_output.into(),
+            sequence: txin.sequence.into(),
+            script_sig: txin.script_sig.into(),
+            witness: txin.witness.iter().map(|w| w.to_vec()).collect(),
+        }
     }
 }
 
-impl_from_core_type!(TxIn, BitcoinTxIn);
-impl_from_ffi_type!(TxIn, BitcoinTxIn);
+impl From<TxIn> for BitcoinTxIn {
+    fn from(txin: TxIn) -> Self {
+        BitcoinTxIn {
+            previous_output: txin.previous_output.into(),
+            sequence: txin.sequence.into(),
+            script_sig: txin.script_sig.into(),
+            witness: BitcoinWitness::from(txin.witness),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
+pub struct TxOut {
+    pub amount: Arc<Amount>,
+    pub script_pubkey: Script,
+}
+
+impl From<bitcoin::TxOut> for TxOut {
+    fn from(txout: bitcoin::TxOut) -> Self {
+        TxOut {
+            amount: Arc::new(Amount(txout.value)),
+            script_pubkey: txout.script_pubkey.into(),
+        }
+    }
+}
+
+impl From<TxOut> for bitcoin::TxOut {
+    fn from(txout: TxOut) -> Self {
+        bitcoin::TxOut {
+            value: txout.amount.0,
+            script_pubkey: txout.script_pubkey.into(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Version(pub i32);
+
+uniffi::custom_type!(Version, i32);
+
+impl UniffiCustomTypeConverter for Version {
+    type Builtin = i32;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(Version(val))
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.0
+    }
+}
+
+impl From<BitcoinTxVersion> for Version {
+    fn from(version: BitcoinTxVersion) -> Self {
+        Version(version.0)
+    }
+}
+
+impl From<Version> for BitcoinTxVersion {
+    fn from(version: Version) -> Self {
+        BitcoinTxVersion(version.0)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LockTime(pub u32);
+uniffi::custom_type!(LockTime, u32);
+
+impl UniffiCustomTypeConverter for LockTime {
+    type Builtin = u32;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(LockTime(val))
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.0
+    }
+}
+
+impl From<BitcoinLockTime> for LockTime {
+    fn from(locktime: BitcoinLockTime) -> Self {
+        LockTime(locktime.to_consensus_u32())
+    }
+}
+
+impl From<LockTime> for BitcoinLockTime {
+    fn from(locktime: LockTime) -> Self {
+        BitcoinLockTime::from_consensus(locktime.0)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Object)]
+pub struct Transaction(pub BitcoinTransaction);
+
+impl From<BitcoinTransaction> for Transaction {
+    fn from(tx: BitcoinTransaction) -> Self {
+        Transaction( BitcoinTransaction {
+            version: tx.version.into(),
+            lock_time: tx.lock_time.into(),
+            input: tx.input.into_iter().map(|i| i.into()).collect(),
+            output: tx.output.into_iter().map(|o| o.into()).collect(),
+        })
+    }
+}
+
+impl From<Transaction> for BitcoinTransaction {
+    fn from(tx: Transaction) -> Self {
+        BitcoinTransaction {
+            version: tx.0.version.into(),
+            lock_time: tx.0.lock_time.into(),
+            input: tx.0.input.into_iter().map(|i| i.into()).collect(),
+            output: tx.0.output.into_iter().map(|o| o.into()).collect(),
+        }
+    }
+}
+
+
+#[uniffi::export]
+impl Transaction {
+    #[uniffi::constructor]
+    pub fn new(version: Version, lock_time: LockTime, input: Vec<TxIn>, output: Vec<TxOut>) -> Self {
+        Transaction(BitcoinTransaction {
+            version: version.into(),
+            lock_time: lock_time.into(),
+            input: input.into_iter().map(|i| i.into()).collect(),
+            output: output.into_iter().map(|o| o.into()).collect(),
+        })
+    }
+
+    pub fn version(&self) -> Version {
+        self.0.version.into()
+    }
+
+    pub fn lock_time(&self) -> LockTime {
+        self.0.lock_time.into()
+    }
+
+    pub fn input(&self) -> Vec<TxIn> {
+        self.0.input.iter().map(|i| i.clone().into()).collect()
+    }
+
+    pub fn output(&self) -> Vec<TxOut> {
+        self.0.output.iter().map(|o| o.clone().into()).collect()
+    }
+
+    pub fn txid(&self) -> Txid {
+        Txid(self.0.compute_txid())
+    }
+
+    pub fn weight(&self) -> Weight {
+        self.0.weight().into()
+    }
+
+    pub fn vsize(&self) -> u32 {
+        self.0.vsize() as u32
+    }
+}
