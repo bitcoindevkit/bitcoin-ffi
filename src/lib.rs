@@ -4,10 +4,10 @@ use bitcoin::Address as BitcoinAddress;
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::Sequence;
 use bitcoin::Transaction as BitcoinTransaction;
 use bitcoin::TxIn as BitcoinTxIn;
 use bitcoin::TxOut as BitcoinTxOut;
-use bitcoin::Sequence;
 
 pub use bitcoin::BlockHash;
 pub use bitcoin::OutPoint;
@@ -255,11 +255,21 @@ impl Transaction {
     }
 
     pub fn input(&self) -> Vec<TxIn> {
-        self.0.input.clone().into_iter().map(|tx_in| tx_in.into()).collect()
+        self.0
+            .input
+            .clone()
+            .into_iter()
+            .map(|tx_in| tx_in.into())
+            .collect()
     }
 
     pub fn output(&self) -> Vec<TxOut> {
-        self.0.output.clone().into_iter().map(|tx_out| tx_out.into()).collect()
+        self.0
+            .output
+            .clone()
+            .into_iter()
+            .map(|tx_out| tx_out.into())
+            .collect()
     }
 
     pub fn lock_time(&self) -> u32 {
