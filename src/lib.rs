@@ -4,7 +4,9 @@ use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 pub use bitcoin::OutPoint;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::TxOut as BitcoinTxOut;
 pub use bitcoin::Txid;
+use std::sync::Arc;
 
 use error::AddressParseError;
 use error::FeeRateError;
@@ -13,7 +15,6 @@ use error::ParseAmountError;
 
 use std::fmt::Display;
 use std::str::FromStr;
-use std::sync::Arc;
 
 #[macro_use]
 mod macros;
@@ -112,6 +113,41 @@ impl Script {
 impl_from_core_type!(Script, BitcoinScriptBuf);
 impl_from_ffi_type!(Script, BitcoinScriptBuf);
 
+#[derive(Debug, Clone)]
+pub struct TxOut {
+    pub value: Arc<Amount>,
+    pub script_pubkey: Arc<Script>,
+}
+
+impl From<BitcoinTxOut> for TxOut {
+    fn from(tx_out: BitcoinTxOut) -> Self {
+        TxOut {
+            value: Arc::new(Amount(tx_out.value)),
+            script_pubkey: Arc::new(Script(tx_out.script_pubkey)),
+        }
+    }
+}
+
+impl From<TxOut> for BitcoinTxOut {
+    fn from(tx_out: TxOut) -> Self {
+        let value = match Arc::try_unwrap(tx_out.value) {
+            Ok(val) => val.0,
+            Err(arc) => arc.0,
+        };
+
+        let script_pubkey = match Arc::try_unwrap(tx_out.script_pubkey) {
+            Ok(val) => val.0,
+            Err(arc) => arc.0.clone(),
+        };
+
+        BitcoinTxOut {
+            value,
+            script_pubkey,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Amount(pub BitcoinAmount);
 
 impl Amount {

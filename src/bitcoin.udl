@@ -67,6 +67,11 @@ interface Address {
   boolean is_valid_for_network(Network network);
 };
 
+dictionary TxOut {
+  Amount value;
+  Script script_pubkey;
+};
+
 // ------------------------------------------------------------------------
 // Errors
 // ------------------------------------------------------------------------
