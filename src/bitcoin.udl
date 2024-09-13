@@ -39,6 +39,9 @@ interface FeeRate {
 [Custom]
 typedef string Txid;
 
+[Custom]
+typedef string BlockHash;
+
 dictionary OutPoint {
   Txid txid;
   u32 vout;
