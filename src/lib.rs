@@ -1,8 +1,10 @@
 use bitcoin::address::{NetworkChecked, NetworkUnchecked};
+use bitcoin::consensus::{deserialize, serialize};
 use bitcoin::Address as BitcoinAddress;
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::Transaction as BitcoinTransaction;
 use bitcoin::TxIn as BitcoinTxIn;
 use bitcoin::TxOut as BitcoinTxOut;
 use bitcoin::Sequence;
@@ -12,6 +14,7 @@ pub use bitcoin::OutPoint;
 pub use bitcoin::Txid;
 
 use error::AddressParseError;
+use error::EncodeError;
 use error::FeeRateError;
 use error::FromScriptError;
 use error::ParseAmountError;
@@ -205,6 +208,67 @@ impl From<TxIn> for BitcoinTxIn {
         }
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Transaction(pub BitcoinTransaction);
+
+impl Transaction {
+    pub fn deserialize(transaction_bytes: &[u8]) -> Result<Self, EncodeError> {
+        let transaction: BitcoinTransaction = deserialize(transaction_bytes)?;
+        Ok(Transaction(transaction))
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        serialize(&self.0)
+    }
+
+    pub fn compute_txid(&self) -> String {
+        self.0.compute_txid().to_string()
+    }
+
+    pub fn weight(&self) -> u64 {
+        self.0.weight().to_wu()
+    }
+
+    pub fn total_size(&self) -> u64 {
+        self.0.total_size() as u64
+    }
+
+    pub fn vsize(&self) -> u64 {
+        self.0.vsize() as u64
+    }
+
+    pub fn is_coinbase(&self) -> bool {
+        self.0.is_coinbase()
+    }
+
+    pub fn is_explicitly_rbf(&self) -> bool {
+        self.0.is_explicitly_rbf()
+    }
+
+    pub fn is_lock_time_enabled(&self) -> bool {
+        self.0.is_lock_time_enabled()
+    }
+
+    pub fn version(&self) -> i32 {
+        self.0.version.0
+    }
+
+    pub fn input(&self) -> Vec<TxIn> {
+        self.0.input.clone().into_iter().map(|tx_in| tx_in.into()).collect()
+    }
+
+    pub fn output(&self) -> Vec<TxOut> {
+        self.0.output.clone().into_iter().map(|tx_out| tx_out.into()).collect()
+    }
+
+    pub fn lock_time(&self) -> u32 {
+        self.0.lock_time.to_consensus_u32()
+    }
+}
+
+impl_from_core_type!(Transaction, BitcoinTransaction);
+impl_from_ffi_type!(Transaction, BitcoinTransaction);
 
 impl_string_custom_typedef!(BlockHash);
 impl_string_custom_typedef!(Txid);

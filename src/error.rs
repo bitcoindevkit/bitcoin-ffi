@@ -1,6 +1,8 @@
 pub use bitcoin::address::FromScriptError as BitcoinFromScriptError;
 pub use bitcoin::address::ParseError as BitcoinParseError;
 use bitcoin::amount::ParseAmountError as BitcoinParseAmountError;
+use bitcoin::consensus::encode::Error as BitcoinEncodeError;
+use bitcoin::hex::DisplayHex;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AddressParseError {
@@ -119,6 +121,48 @@ impl From<BitcoinParseAmountError> for ParseAmountError {
                 error_message: c.to_string(),
             },
             _ => ParseAmountError::OtherParseAmountErr,
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum EncodeError {
+    #[error("io error")]
+    Io,
+    #[error("allocation of oversized vector")]
+    OversizedVectorAllocation,
+    #[error("invalid checksum: expected={expected} actual={actual}")]
+    InvalidChecksum { expected: String, actual: String },
+    #[error("non-minimal var int")]
+    NonMinimalVarInt,
+    #[error("parse failed")]
+    ParseFailed,
+    #[error("unsupported segwit version: {flag}")]
+    UnsupportedSegwitFlag { flag: u8 },
+    // This is required because the bdk::bitcoin::consensus::encode::Error is non-exhaustive
+    #[error("other encoding error")]
+    OtherEncodeErr,
+}
+
+impl From<BitcoinEncodeError> for EncodeError {
+    fn from(error: BitcoinEncodeError) -> Self {
+        match error {
+            BitcoinEncodeError::Io(_) => EncodeError::Io,
+            BitcoinEncodeError::OversizedVectorAllocation { .. } => {
+                EncodeError::OversizedVectorAllocation
+            }
+            BitcoinEncodeError::InvalidChecksum { expected, actual } => {
+                EncodeError::InvalidChecksum {
+                    expected: DisplayHex::to_lower_hex_string(&expected),
+                    actual: DisplayHex::to_lower_hex_string(&actual),
+                }
+            }
+            BitcoinEncodeError::NonMinimalVarInt => EncodeError::NonMinimalVarInt,
+            BitcoinEncodeError::ParseFailed(_) => EncodeError::ParseFailed,
+            BitcoinEncodeError::UnsupportedSegwitFlag(flag) => {
+                EncodeError::UnsupportedSegwitFlag { flag }
+            }
+            _ => EncodeError::OtherEncodeErr,
         }
     }
 }

@@ -82,6 +82,23 @@ dictionary TxOut {
   Script script_pubkey;
 };
 
+interface Transaction {
+  [Name=deserialize, Throws=EncodeError]
+  constructor([ByRef] bytes transaction_bytes);
+  bytes serialize();
+  string compute_txid();
+  u64 total_size();
+  u64 vsize();
+  boolean is_coinbase();
+  boolean is_explicitly_rbf();
+  boolean is_lock_time_enabled();
+  i32 version();
+  u64 weight();
+  sequence<TxIn> input();
+  sequence<TxOut> output();
+  u32 lock_time();
+};
+
 // ------------------------------------------------------------------------
 // Errors
 // ------------------------------------------------------------------------
@@ -121,4 +138,15 @@ interface ParseAmountError {
 [Error]
 interface FeeRateError {
   ArithmeticOverflow();
+};
+
+[Error]
+interface EncodeError {
+  Io();
+  OversizedVectorAllocation();
+  InvalidChecksum(string expected, string actual);
+  NonMinimalVarInt();
+  ParseFailed();
+  UnsupportedSegwitFlag(u8 flag);
+  OtherEncodeErr();
 };
