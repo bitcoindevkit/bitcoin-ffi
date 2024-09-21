@@ -4,7 +4,7 @@ namespace bitcoin {};
 // Core types
 // ------------------------------------------------------------------------
 
-interface Script {
+interface ScriptBuf {
   constructor(sequence<u8> raw_output_script);
  
   sequence<u8> to_bytes();
@@ -49,7 +49,7 @@ dictionary OutPoint {
 
 dictionary TxIn {
   OutPoint previous_output;
-  Script script_sig;
+  ScriptBuf script_sig;
   u32 sequence;
   sequence<sequence<u8>> witness;
 };
@@ -68,9 +68,9 @@ interface Address {
   constructor(string address, Network network);
 
   [Name=from_script, Throws=FromScriptError]
-  constructor(Script script, Network network);
+  constructor(ScriptBuf script, Network network);
 
-  Script script_pubkey();
+  ScriptBuf script_pubkey();
 
   string to_qr_uri();
 
@@ -79,7 +79,7 @@ interface Address {
 
 dictionary TxOut {
   Amount value;
-  Script script_pubkey;
+  ScriptBuf script_pubkey;
 };
 
 // ------------------------------------------------------------------------

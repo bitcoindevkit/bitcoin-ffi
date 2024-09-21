@@ -3,9 +3,9 @@ use bitcoin::Address as BitcoinAddress;
 use bitcoin::Amount as BitcoinAmount;
 use bitcoin::FeeRate as BitcoinFeeRate;
 use bitcoin::ScriptBuf as BitcoinScriptBuf;
+use bitcoin::Sequence;
 use bitcoin::TxIn as BitcoinTxIn;
 use bitcoin::TxOut as BitcoinTxOut;
-use bitcoin::Sequence;
 
 pub use bitcoin::BlockHash;
 pub use bitcoin::OutPoint;
@@ -35,13 +35,13 @@ impl Address {
         Ok(Address(network_checked_address))
     }
 
-    pub fn from_script(script: Arc<Script>, network: Network) -> Result<Self, FromScriptError> {
+    pub fn from_script(script: Arc<ScriptBuf>, network: Network) -> Result<Self, FromScriptError> {
         let address = BitcoinAddress::from_script(&script.0.clone(), network)?;
         Ok(Address(address))
     }
 
-    pub fn script_pubkey(&self) -> Arc<Script> {
-        Arc::new(Script(self.0.script_pubkey()))
+    pub fn script_pubkey(&self) -> Arc<ScriptBuf> {
+        Arc::new(ScriptBuf(self.0.script_pubkey()))
     }
 
     pub fn to_qr_uri(&self) -> String {
@@ -101,12 +101,12 @@ impl_from_core_type!(FeeRate, BitcoinFeeRate);
 impl_from_ffi_type!(FeeRate, BitcoinFeeRate);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Script(pub BitcoinScriptBuf);
+pub struct ScriptBuf(pub BitcoinScriptBuf);
 
-impl Script {
+impl ScriptBuf {
     pub fn new(raw_output_script: Vec<u8>) -> Self {
         let script: BitcoinScriptBuf = raw_output_script.into();
-        Script(script)
+        ScriptBuf(script)
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
@@ -114,20 +114,20 @@ impl Script {
     }
 }
 
-impl_from_core_type!(Script, BitcoinScriptBuf);
-impl_from_ffi_type!(Script, BitcoinScriptBuf);
+impl_from_core_type!(ScriptBuf, BitcoinScriptBuf);
+impl_from_ffi_type!(ScriptBuf, BitcoinScriptBuf);
 
 #[derive(Debug, Clone)]
 pub struct TxOut {
     pub value: Arc<Amount>,
-    pub script_pubkey: Arc<Script>,
+    pub script_pubkey: Arc<ScriptBuf>,
 }
 
 impl From<BitcoinTxOut> for TxOut {
     fn from(tx_out: BitcoinTxOut) -> Self {
         TxOut {
             value: Arc::new(Amount(tx_out.value)),
-            script_pubkey: Arc::new(Script(tx_out.script_pubkey)),
+            script_pubkey: Arc::new(ScriptBuf(tx_out.script_pubkey)),
         }
     }
 }
@@ -179,7 +179,7 @@ impl_from_ffi_type!(Amount, BitcoinAmount);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TxIn {
     pub previous_output: OutPoint,
-    pub script_sig: Arc<Script>,
+    pub script_sig: Arc<ScriptBuf>,
     pub sequence: u32,
     pub witness: Vec<Vec<u8>>,
 }
