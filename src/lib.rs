@@ -137,19 +137,9 @@ impl From<BitcoinTxOut> for TxOut {
 
 impl From<TxOut> for BitcoinTxOut {
     fn from(tx_out: TxOut) -> Self {
-        let value = match Arc::try_unwrap(tx_out.value) {
-            Ok(val) => val.0,
-            Err(arc) => arc.0,
-        };
-
-        let script_pubkey = match Arc::try_unwrap(tx_out.script_pubkey) {
-            Ok(val) => val.0,
-            Err(arc) => arc.0.clone(),
-        };
-
         BitcoinTxOut {
-            value,
-            script_pubkey,
+            value: tx_out.value.0,
+            script_pubkey: tx_out.script_pubkey.0.clone(),
         }
     }
 }
