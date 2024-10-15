@@ -8,6 +8,7 @@ use bitcoin::Sequence;
 use bitcoin::Transaction as BitcoinTransaction;
 use bitcoin::TxIn as BitcoinTxIn;
 use bitcoin::TxOut as BitcoinTxOut;
+use bitcoin::Psbt as BitcoinPsbt;
 
 pub use bitcoin::BlockHash;
 pub use bitcoin::OutPoint;
@@ -18,10 +19,13 @@ use error::EncodeError;
 use error::FeeRateError;
 use error::FromScriptError;
 use error::ParseAmountError;
+use error::PsbtError;
+use error::PsbtParseError;
 
 use std::fmt::Display;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 #[macro_use]
 mod macros;
@@ -282,5 +286,29 @@ impl_from_ffi_type!(Transaction, BitcoinTransaction);
 
 impl_string_custom_typedef!(BlockHash);
 impl_string_custom_typedef!(Txid);
+
+pub struct Psbt(pub Mutex<BitcoinPsbt>);
+
+impl Psbt {
+    pub fn deserialize(psbt_bytes: &[u8]) -> Result<Self, PsbtError> {
+        let psbt: BitcoinPsbt = BitcoinPsbt::deserialize(psbt_bytes)?;
+        Ok(Psbt(psbt.into()))
+    }
+
+    pub fn deserialize_base64(psbt_base64: String) -> Result<Self, PsbtParseError> {
+        let psbt: BitcoinPsbt = BitcoinPsbt::from_str(&psbt_base64)?;
+        Ok(Psbt(psbt.into()))
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        let psbt_bytes = self.0.lock().unwrap().serialize();
+        psbt_bytes
+    }
+
+    pub fn serialize_base64(&self) -> String {
+        let psbt_base64 = self.0.lock().unwrap().to_string();
+        psbt_base64
+    }
+}
 
 uniffi::include_scaffolding!("bitcoin");

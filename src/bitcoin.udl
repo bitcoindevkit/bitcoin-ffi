@@ -99,6 +99,15 @@ interface Transaction {
   u32 lock_time();
 };
 
+interface Psbt {
+  [Name=deserialize, Throws=PsbtError]
+  constructor([ByRef] bytes psbt_bytes);
+  [Name=deserialize_base64, Throws=PsbtParseError]
+  constructor(string psbt_base64);
+  bytes serialize();
+  string serialize_base64();
+};
+
 // ------------------------------------------------------------------------
 // Errors
 // ------------------------------------------------------------------------
@@ -149,4 +158,47 @@ interface EncodeError {
   ParseFailed();
   UnsupportedSegwitFlag(u8 flag);
   OtherEncodeErr();
+};
+
+[Error]
+interface PsbtError {
+  InvalidMagic();
+  MissingUtxo();
+  InvalidSeparator();
+  PsbtUtxoOutOfBounds();
+  InvalidKey(string key);
+  InvalidProprietaryKey();
+  DuplicateKey(string key);
+  UnsignedTxHasScriptSigs();
+  UnsignedTxHasScriptWitnesses();
+  MustHaveUnsignedTx();
+  NoMorePairs();
+  UnexpectedUnsignedTx();
+  NonStandardSighashType(u32 sighash);
+  InvalidHash(string hash);
+  InvalidPreimageHashPair();
+  CombineInconsistentKeySources(string xpub);
+  ConsensusEncoding(string encoding_error);
+  NegativeFee();
+  FeeOverflow();
+  InvalidPublicKey(string error_message);
+  InvalidSecp256k1PublicKey(string secp256k1_error);
+  InvalidXOnlyPublicKey();
+  InvalidEcdsaSignature(string error_message);
+  InvalidTaprootSignature(string error_message);
+  InvalidControlBlock();
+  InvalidLeafVersion();
+  Taproot();
+  TapTree(string error_message);
+  XPubKey();
+  Version(string error_message);
+  PartialDataConsumption();
+  Io(string error_message);
+  OtherPsbtErr();
+};
+
+[Error]
+interface PsbtParseError {
+  PsbtEncoding(string error_message);
+  Base64Encoding(string error_message);
 };
