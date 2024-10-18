@@ -188,6 +188,17 @@ impl From<BitcoinTxIn> for TxIn {
     }
 }
 
+impl From<&BitcoinTxIn> for TxIn {
+    fn from(tx_in: &BitcoinTxIn) -> Self {
+        TxIn {
+            previous_output: tx_in.previous_output,
+            script_sig: Arc::new(tx_in.script_sig.clone().into()),
+            sequence: tx_in.sequence.0,
+            witness: tx_in.witness.to_vec(),
+        }
+    }
+}
+
 impl From<TxIn> for BitcoinTxIn {
     fn from(value: TxIn) -> Self {
         Self {
