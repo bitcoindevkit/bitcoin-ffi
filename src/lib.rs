@@ -178,12 +178,12 @@ pub struct TxIn {
 }
 
 impl From<BitcoinTxIn> for TxIn {
-    fn from(value: BitcoinTxIn) -> Self {
-        Self {
-            previous_output: value.previous_output,
-            script_sig: Arc::new(value.script_sig.into()),
-            sequence: value.sequence.0,
-            witness: value.witness.to_vec(),
+    fn from(tx_in: BitcoinTxIn) -> Self {
+        TxIn {
+            previous_output: tx_in.previous_output,
+            script_sig: Arc::new(tx_in.script_sig.into()),
+            sequence: tx_in.sequence.0,
+            witness: tx_in.witness.to_vec(),
         }
     }
 }
@@ -200,12 +200,12 @@ impl From<&BitcoinTxIn> for TxIn {
 }
 
 impl From<TxIn> for BitcoinTxIn {
-    fn from(value: TxIn) -> Self {
-        Self {
-            previous_output: value.previous_output,
-            script_sig: value.script_sig.0.clone(),
-            sequence: Sequence(value.sequence),
-            witness: value.witness.into(),
+    fn from(tx_in: TxIn) -> Self {
+        BitcoinTxIn {
+            previous_output: tx_in.previous_output,
+            script_sig: tx_in.script_sig.0.clone(),
+            sequence: Sequence(tx_in.sequence),
+            witness: tx_in.witness.into(),
         }
     }
 }
