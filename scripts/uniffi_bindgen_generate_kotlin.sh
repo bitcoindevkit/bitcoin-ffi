@@ -30,4 +30,4 @@ fi
 mkdir -p "$PROJECT_DIR"/lib/src/main/kotlin/"$PACKAGE_DIR" || exit 1
 $UNIFFI_BINDGEN_BIN generate src/bitcoin.udl --language kotlin -o "$TARGET_DIR" || exit 1
 
-cp "$TARGET_DIR"/"$PACKAGE_DIR"/bitcoin.kt "$PROJECT_DIR"/lib/src/main/kotlin/"$PACKAGE_DIR"/bitcoinffi.kt || exit 1
+cp "$TARGET_DIR"/"$PACKAGE_DIR"/bitcoin.kt "$PROJECT_DIR"/lib/src/main/kotlin/"$PACKAGE_DIR"/bitcoin.kt || exit 1
