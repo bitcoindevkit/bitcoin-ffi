@@ -330,9 +330,7 @@ impl From<bitcoin::Network> for Network {
     }
 }
 
-uniffi::custom_type!(Txid, String);
-impl_string_custom_typedef!(Txid);
-uniffi::custom_type!(BlockHash, String);
-impl_string_custom_typedef!(BlockHash);
+define_custom_string_type!(Txid);
+define_custom_string_type!(BlockHash);
 
 uniffi::setup_scaffolding!("bitcoin");

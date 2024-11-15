@@ -18,8 +18,10 @@ macro_rules! impl_from_ffi_type {
     };
 }
 
-macro_rules! impl_string_custom_typedef {
+macro_rules! define_custom_string_type {
     ($ffi_type:ident) => {
+        uniffi::custom_type!($ffi_type, String);
+
         impl UniffiCustomTypeConverter for $ffi_type {
             type Builtin = String;
             fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
