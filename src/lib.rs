@@ -28,7 +28,7 @@ mod macros;
 pub mod error;
 pub use bitcoin::Network;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Address(BitcoinAddress<NetworkChecked>);
 
 impl Address {
