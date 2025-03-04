@@ -303,6 +303,7 @@ pub enum Network {
     #[default]
     Bitcoin,
     Testnet,
+    Testnet4,
     Signet,
     Regtest,
 }
@@ -312,6 +313,7 @@ impl From<Network> for bitcoin::Network {
         match network {
             Network::Bitcoin => bitcoin::Network::Bitcoin,
             Network::Testnet => bitcoin::Network::Testnet,
+            Network::Testnet4 => bitcoin::Network::Testnet4,
             Network::Signet => bitcoin::Network::Signet,
             Network::Regtest => bitcoin::Network::Regtest,
         }
@@ -323,6 +325,7 @@ impl From<bitcoin::Network> for Network {
         match network {
             bitcoin::Network::Bitcoin => Network::Bitcoin,
             bitcoin::Network::Testnet => Network::Testnet,
+            bitcoin::Network::Testnet4 => Network::Testnet4,
             bitcoin::Network::Signet => Network::Signet,
             bitcoin::Network::Regtest => Network::Regtest,
             _ => unreachable!(),
