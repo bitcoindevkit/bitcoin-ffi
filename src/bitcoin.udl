@@ -4,6 +4,7 @@ namespace bitcoin {};
 enum Network {
     "Bitcoin",
     "Testnet",
+    "Testnet4",
     "Signet",
-    "Regtest",
+    "Regtest"
 };
