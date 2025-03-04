@@ -4,7 +4,7 @@ use bitcoin::amount::ParseAmountError as BitcoinParseAmountError;
 use bitcoin::consensus::encode::Error as BitcoinEncodeError;
 use bitcoin::hex::DisplayHex;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum AddressParseError {
     #[error("base58 address encoding error")]
     Base58,
@@ -51,13 +51,13 @@ impl From<BitcoinParseError> for AddressParseError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum FeeRateError {
     #[error("arithmetic overflow on feerate")]
     ArithmeticOverflow,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum FromScriptError {
     #[error("script is not a p2pkh, p2sh or witness program")]
     UnrecognizedScript,
@@ -88,7 +88,7 @@ impl From<BitcoinFromScriptError> for FromScriptError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum ParseAmountError {
     #[error("amount out of range")]
     OutOfRange,
@@ -125,7 +125,7 @@ impl From<BitcoinParseAmountError> for ParseAmountError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum EncodeError {
     #[error("io error")]
     Io,
