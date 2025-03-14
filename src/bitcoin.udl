@@ -1,6 +1,6 @@
 namespace bitcoin {};
 
-[NonExhaustive]
+[NonExhaustive, Remote]
 enum Network {
     "Bitcoin",
     "Testnet",
