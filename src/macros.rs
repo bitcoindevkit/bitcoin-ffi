@@ -18,19 +18,13 @@ macro_rules! impl_from_ffi_type {
     };
 }
 
+#[macro_export]
 macro_rules! define_custom_string_type {
-    ($ffi_type:ident) => {
-        uniffi::custom_type!($ffi_type, String);
-
-        impl UniffiCustomTypeConverter for $ffi_type {
-            type Builtin = String;
-            fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-                Ok(val.parse::<$ffi_type>()?)
-            }
-
-            fn from_custom(obj: Self) -> Self::Builtin {
-                obj.to_string()
-            }
-        }
+    ($name:ident) => {
+        uniffi::custom_type!($name, String, {
+            remote,
+            lower: |value: $name| value.to_string(),
+            try_lift: |value: String| value.parse().map_err(|_| uniffi::deps::anyhow::Error::msg("parse error")),
+        });
     };
 }
