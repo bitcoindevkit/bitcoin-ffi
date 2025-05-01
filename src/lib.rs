@@ -19,6 +19,7 @@ mod macros;
 pub mod error;
 
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Object)]
+#[uniffi::export(Display)]
 pub struct Address(bitcoin::Address<NetworkChecked>);
 
 #[uniffi::export]
