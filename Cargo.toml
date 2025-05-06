@@ -12,7 +12,7 @@ name = "bitcoin_ffi"
 default = ["uniffi/cli"]
 
 [dependencies]
-bitcoin = { version = "0.32.4" }
+bitcoin = { version = "0.32.4", features = ["base64"] }
 uniffi = { version = "0.29.1" }
 thiserror = "1.0.58"
 

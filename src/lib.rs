@@ -4,11 +4,13 @@ use bitcoin::consensus::{deserialize, serialize};
 pub use bitcoin::BlockHash;
 pub use bitcoin::Txid;
 
-use error::AddressParseError;
 use error::EncodeError;
+use error::ExtractTxError;
 use error::FeeRateError;
 use error::FromScriptError;
 use error::ParseAmountError;
+use error::PsbtError;
+use error::{AddressParseError, PsbtParseError};
 
 use std::fmt::Display;
 use std::str::FromStr;
@@ -297,6 +299,60 @@ impl Transaction {
 
 impl_from_core_type!(Transaction, bitcoin::Transaction);
 impl_from_ffi_type!(Transaction, bitcoin::Transaction);
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Object)]
+pub struct Psbt(bitcoin::Psbt);
+
+#[uniffi::export]
+impl Psbt {
+    #[uniffi::constructor]
+    pub fn from_unsigned_tx(tx: Arc<Transaction>) -> Result<Self, PsbtError> {
+        let psbt = bitcoin::Psbt::from_unsigned_tx(tx.0.clone().into())?;
+        Ok(Psbt(psbt))
+    }
+
+    #[uniffi::constructor]
+    pub fn deserialize(psbt_bytes: &[u8]) -> Result<Self, PsbtError> {
+        let psbt = bitcoin::Psbt::deserialize(psbt_bytes)?;
+        Ok(psbt.into())
+    }
+
+    #[uniffi::constructor]
+    pub fn deserialize_base64(psbt_base64: String) -> Result<Self, PsbtParseError> {
+        let psbt = bitcoin::Psbt::from_str(&psbt_base64)?;
+        Ok(psbt.into())
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        self.0.serialize()
+    }
+
+    pub fn serialize_hex(&self) -> String {
+        self.0.serialize_hex()
+    }
+
+    pub fn serialize_base64(&self) -> String {
+        self.0.to_string()
+    }
+
+    pub fn extract_tx(&self) -> Result<Arc<Transaction>, ExtractTxError> {
+        Ok(Arc::new(self.0.clone().extract_tx()?.into()))
+    }
+
+    pub fn combine(&self, other: Arc<Self>) -> Result<Arc<Psbt>, PsbtError> {
+        let mut psbt = self.0.clone();
+        let other_psbt = other.0.clone();
+        psbt.combine(other_psbt)?;
+        Ok(Arc::new(psbt.into()))
+    }
+
+    pub fn fee(&self) -> Result<Arc<Amount>, PsbtError> {
+        Ok(Arc::new(self.0.clone().fee()?.into()))
+    }
+}
+
+impl_from_core_type!(Psbt, bitcoin::Psbt);
+impl_from_ffi_type!(Psbt, bitcoin::Psbt);
 
 #[derive(Clone, Default, uniffi::Enum)]
 #[non_exhaustive]
